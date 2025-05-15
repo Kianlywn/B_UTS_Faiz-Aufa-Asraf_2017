@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Nigger
+namespace Perpus
 {
     public class Book
     {
@@ -10,7 +9,7 @@ namespace Nigger
         public string Judul { get; set; }
         public string Penulis { get; set; }
         public int TahunTerbit { get; set; }
-        public bool Status { get; set; } // true = tersedia, false = dipinjam
+        public bool Status { get; set; }
 
         public Book(int id, string judul, string penulis, int tahunTerbit)
         {
@@ -54,39 +53,39 @@ namespace Nigger
     {
         public string Nama { get; set; }
         public string Alamat { get; set; }
-        private List<Book> KoleksiBuku { get; set; }
+        private List<Book> Listbuku { get; set; }
 
         public Perpustakaan(string nama, string alamat)
         {
             Nama = nama;
             Alamat = alamat;
-            KoleksiBuku = new List<Book>();
+            Listbuku = new List<Book>();
         }
 
         public void TambahBuku(Book buku)
         {
-            KoleksiBuku.Add(buku);
+            Listbuku.Add(buku);
             Console.WriteLine("Buku berhasil ditambahkan!");
         }
 
         public void TampilkanSemuaBuku()
         {
-            if (KoleksiBuku.Count == 0)
+            if (Listbuku.Count == 0)
             {
                 Console.WriteLine("Tidak ada buku dalam koleksi.");
                 return;
             }
 
             Console.WriteLine($"\nDaftar Buku di {Nama}:");
-            for (int i = 0; i < KoleksiBuku.Count; i++)
+            foreach (Book buku in Listbuku)
             {
-                KoleksiBuku[i].DisplayInfo();
+                buku.DisplayInfo();
             }
         }
 
         public Book CariBukuByID(int id)
         {
-            foreach (Book buku in KoleksiBuku)
+            foreach (Book buku in Listbuku)
             {
                 if (buku.ID == id)
                 {
@@ -99,7 +98,7 @@ namespace Nigger
         public List<Book> CariBukuByJudul(string judul)
         {
             List<Book> hasilPencarian = new List<Book>();
-            foreach (Book buku in KoleksiBuku)
+            foreach (Book buku in Listbuku)
             {
                 if (buku.Judul.ToLower().Contains(judul.ToLower()))
                 {
@@ -128,7 +127,7 @@ namespace Nigger
             Book buku = CariBukuByID(id);
             if (buku != null)
             {
-                KoleksiBuku.Remove(buku);
+                Listbuku.Remove(buku);
                 return true;
             }
             return false;
@@ -139,7 +138,7 @@ namespace Nigger
     {
         static void Main(string[] args)
         {
-            Perpustakaan perpustakaan = new Perpustakaan("Perpustakaan Kota", "Jl. Merdeka No. 1");
+            Perpustakaan perpustakaan = new Perpustakaan("Perpustakaan Karbiet", "Jl. Teuku Umar No. 202");
 
             perpustakaan.TambahBuku(new Book(1, "Debat Montelli Fisalia", "Si Karbit", 2025));
             perpustakaan.TambahBuku(new Book(2, "Pembungkaman 2025", "Abdul Kareem", 2025));
@@ -218,9 +217,9 @@ namespace Nigger
                         if (hasil.Count > 0)
                         {
                             Console.WriteLine("\nHasil Pencarian:");
-                            for (int i = 0; i < hasil.Count; i++)
+                            foreach (Book buku in hasil)
                             {
-                                hasil[i].DisplayInfo();
+                                buku.DisplayInfo();
                             }
                         }
                         else
