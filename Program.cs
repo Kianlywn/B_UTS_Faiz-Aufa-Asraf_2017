@@ -1,47 +1,62 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace PerpustakaanApp
+namespace AplikasiPerpustakaanNoVarCaseSwitch
 {
     public class Book
     {
-        public int ID;
-        public string Judul;
-        public string Penulis;
-        public int TahunTerbit;
-        public string Status;
+        public int ID { get; set; }
+        public string Judul { get; set; }
+        public string Penulis { get; set; }
+        public int TahunTerbit { get; set; }
+        public bool Status { get; set; } // true = tersedia, false = dipinjam
 
-        public virtual void TampilkanInfo()
+        public Book(int id, string judul, string penulis, int tahunTerbit)
         {
-            Console.WriteLine("ID: " + ID);
-            Console.WriteLine("Judul: " + Judul);
-            Console.WriteLine("Penulis: " + Penulis);
-            Console.WriteLine("Tahun Terbit: " + TahunTerbit);
-            Console.WriteLine("Status: " + Status);
-            Console.WriteLine("-------------------------");
+            ID = id;
+            Judul = judul;
+            Penulis = penulis;
+            TahunTerbit = tahunTerbit;
+            Status = true;
+        }
+
+        public virtual void DisplayInfo()
+        {
+            Console.WriteLine($"ID: {ID}");
+            Console.WriteLine($"Judul: {Judul}");
+            Console.WriteLine($"Penulis: {Penulis}");
+            Console.WriteLine($"Tahun Terbit: {TahunTerbit}");
+            Console.WriteLine($"Status: {(Status ? "Tersedia" : "Dipinjam")}");
+            Console.WriteLine("-----------------------------");
         }
     }
 
-    // Inheritance: ReferenceBook turunan dari Book
     public class ReferenceBook : Book
     {
-        public string Kategori;
+        public string Kategori { get; set; }
 
-        public override void TampilkanInfo()
+        public ReferenceBook(int id, string judul, string penulis, int tahunTerbit, string kategori)
+            : base(id, judul, penulis, tahunTerbit)
         {
-            base.TampilkanInfo();
-            Console.WriteLine("Kategori: " + Kategori);
-            Console.WriteLine("-------------------------");
+            Kategori = kategori;
+        }
+
+        public override void DisplayInfo()
+        {
+            base.DisplayInfo();
+            Console.WriteLine($"Kategori: {Kategori}");
+            Console.WriteLine("-----------------------------");
         }
     }
 
-    public class Library
+    public class Perpustakaan
     {
-        public string Nama;
-        public string Alamat;
-        public List<Book> KoleksiBuku;
+        public string Nama { get; set; }
+        public string Alamat { get; set; }
+        private List<Book> KoleksiBuku { get; set; }
 
-        public Library(string nama, string alamat)
+        public Perpustakaan(string nama, string alamat)
         {
             Nama = nama;
             Alamat = alamat;
@@ -51,87 +66,72 @@ namespace PerpustakaanApp
         public void TambahBuku(Book buku)
         {
             KoleksiBuku.Add(buku);
-            Console.WriteLine("Buku berhasil ditambahkan.");
+            Console.WriteLine("Buku berhasil ditambahkan!");
         }
 
         public void TampilkanSemuaBuku()
         {
             if (KoleksiBuku.Count == 0)
             {
-                Console.WriteLine("Belum ada buku.");
+                Console.WriteLine("Tidak ada buku dalam koleksi.");
+                return;
             }
-            else
+
+            Console.WriteLine($"\nDaftar Buku di {Nama}:");
+            for (int i = 0; i < KoleksiBuku.Count; i++)
             {
-                for (int i = 0; i < KoleksiBuku.Count; i++)
-                {
-                    KoleksiBuku[i].TampilkanInfo();
-                }
+                KoleksiBuku[i].DisplayInfo();
             }
         }
 
-        public void CariBuku(string keyword)
+        public Book CariBukuByID(int id)
         {
-            bool ditemukan = false;
-            for (int i = 0; i < KoleksiBuku.Count; i++)
+            foreach (Book buku in KoleksiBuku)
             {
-                if (KoleksiBuku[i].Judul.ToLower().Contains(keyword.ToLower()) || KoleksiBuku[i].ID.ToString() == keyword)
+                if (buku.ID == id)
                 {
-                    KoleksiBuku[i].TampilkanInfo();
-                    ditemukan = true;
+                    return buku;
                 }
             }
-
-            if (!ditemukan)
-            {
-                Console.WriteLine("Buku tidak ditemukan.");
-            }
+            return null;
         }
 
-        public void UpdateBuku(int id)
+        public List<Book> CariBukuByJudul(string judul)
         {
-            bool ditemukan = false;
-            for (int i = 0; i < KoleksiBuku.Count; i++)
+            List<Book> hasilPencarian = new List<Book>();
+            foreach (Book buku in KoleksiBuku)
             {
-                if (KoleksiBuku[i].ID == id)
+                if (buku.Judul.ToLower().Contains(judul.ToLower()))
                 {
-                    Console.Write("Judul baru: ");
-                    KoleksiBuku[i].Judul = Console.ReadLine();
-                    Console.Write("Penulis baru: ");
-                    KoleksiBuku[i].Penulis = Console.ReadLine();
-                    Console.Write("Tahun Terbit baru: ");
-                    KoleksiBuku[i].TahunTerbit = Convert.ToInt32(Console.ReadLine());
-                    Console.Write("Status baru (Tersedia/Dipinjam): ");
-                    KoleksiBuku[i].Status = Console.ReadLine();
-                    Console.WriteLine("Data buku diperbarui.");
-                    ditemukan = true;
-                    break;
+                    hasilPencarian.Add(buku);
                 }
             }
-
-            if (!ditemukan)
-            {
-                Console.WriteLine("Buku tidak ditemukan.");
-            }
+            return hasilPencarian;
         }
 
-        public void HapusBuku(int id)
+        public bool UpdateBuku(int id, string judul, string penulis, int tahunTerbit, bool status)
         {
-            bool ditemukan = false;
-            for (int i = 0; i < KoleksiBuku.Count; i++)
+            Book buku = CariBukuByID(id);
+            if (buku != null)
             {
-                if (KoleksiBuku[i].ID == id)
-                {
-                    KoleksiBuku.RemoveAt(i);
-                    Console.WriteLine("Buku berhasil dihapus.");
-                    ditemukan = true;
-                    break;
-                }
+                buku.Judul = judul;
+                buku.Penulis = penulis;
+                buku.TahunTerbit = tahunTerbit;
+                buku.Status = status;
+                return true;
             }
+            return false;
+        }
 
-            if (!ditemukan)
+        public bool HapusBuku(int id)
+        {
+            Book buku = CariBukuByID(id);
+            if (buku != null)
             {
-                Console.WriteLine("Buku tidak ditemukan.");
+                KoleksiBuku.Remove(buku);
+                return true;
             }
+            return false;
         }
     }
 
@@ -139,41 +139,49 @@ namespace PerpustakaanApp
     {
         static void Main(string[] args)
         {
-            Library perpustakaan = new Library("Perpustakaan Faiz", "Jl. Contoh No. 1");
+            Perpustakaan perpustakaan = new Perpustakaan("Perpustakaan Kota", "Jl. Merdeka No. 1");
 
-            bool jalan = true;
-            while (jalan)
+            perpustakaan.TambahBuku(new Book(1, "Debat Montelli Fisalia", "Si Karbit", 2025));
+            perpustakaan.TambahBuku(new Book(2, "Pembungkaman 2025", "Abdul Kareem", 2025));
+            perpustakaan.TambahBuku(new ReferenceBook(3, "Sejarah RRQ", "Kingdom", 2025, "Kamus"));
+
+            bool isRunning = true;
+            while (isRunning)
             {
-                Console.WriteLine("\n===== MENU =====");
+                Console.WriteLine("\nSistem Manajemen Perpustakaan");
                 Console.WriteLine("1. Tambah Buku");
                 Console.WriteLine("2. Tampilkan Semua Buku");
                 Console.WriteLine("3. Cari Buku");
                 Console.WriteLine("4. Update Buku");
                 Console.WriteLine("5. Hapus Buku");
                 Console.WriteLine("6. Keluar");
-                Console.Write("Pilih (1-6): ");
+                Console.Write("Pilih menu: ");
+
                 string pilihan = Console.ReadLine();
 
                 if (pilihan == "1")
                 {
-                    Book bukuBaru = new Book();
+                    Console.WriteLine("\nTambah Buku Baru");
+                    Console.Write("Masukkan ID: ");
+                    int id = int.Parse(Console.ReadLine());
+                    Console.Write("Masukkan Judul: ");
+                    string judul = Console.ReadLine();
+                    Console.Write("Masukkan Penulis: ");
+                    string penulis = Console.ReadLine();
+                    Console.Write("Masukkan Tahun Terbit: ");
+                    int tahun = int.Parse(Console.ReadLine());
 
-                    Console.Write("ID: ");
-                    bukuBaru.ID = Convert.ToInt32(Console.ReadLine());
-
-                    Console.Write("Judul: ");
-                    bukuBaru.Judul = Console.ReadLine();
-
-                    Console.Write("Penulis: ");
-                    bukuBaru.Penulis = Console.ReadLine();
-
-                    Console.Write("Tahun Terbit: ");
-                    bukuBaru.TahunTerbit = Convert.ToInt32(Console.ReadLine());
-
-                    Console.Write("Status (Tersedia/Dipinjam): ");
-                    bukuBaru.Status = Console.ReadLine();
-
-                    perpustakaan.TambahBuku(bukuBaru);
+                    Console.Write("Apakah buku referensi? (y/n): ");
+                    if (Console.ReadLine().ToLower() == "y")
+                    {
+                        Console.Write("Masukkan Kategori: ");
+                        string kategori = Console.ReadLine();
+                        perpustakaan.TambahBuku(new ReferenceBook(id, judul, penulis, tahun, kategori));
+                    }
+                    else
+                    {
+                        perpustakaan.TambahBuku(new Book(id, judul, penulis, tahun));
+                    }
                 }
                 else if (pilihan == "2")
                 {
@@ -181,32 +189,98 @@ namespace PerpustakaanApp
                 }
                 else if (pilihan == "3")
                 {
-                    Console.Write("Masukkan ID atau Judul buku: ");
-                    string keyword = Console.ReadLine();
-                    perpustakaan.CariBuku(keyword);
+                    Console.WriteLine("\nCari Buku");
+                    Console.WriteLine("1. Cari berdasarkan ID");
+                    Console.WriteLine("2. Cari berdasarkan Judul");
+                    Console.Write("Pilih: ");
+                    string pilihanCari = Console.ReadLine();
+
+                    if (pilihanCari == "1")
+                    {
+                        Console.Write("Masukkan ID: ");
+                        int cariId = int.Parse(Console.ReadLine());
+                        Book buku = perpustakaan.CariBukuByID(cariId);
+                        if (buku != null)
+                        {
+                            Console.WriteLine("\nHasil Pencarian:");
+                            buku.DisplayInfo();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Buku tidak ditemukan.");
+                        }
+                    }
+                    else if (pilihanCari == "2")
+                    {
+                        Console.Write("Masukkan Judul: ");
+                        string cariJudul = Console.ReadLine();
+                        List<Book> hasil = perpustakaan.CariBukuByJudul(cariJudul);
+                        if (hasil.Count > 0)
+                        {
+                            Console.WriteLine("\nHasil Pencarian:");
+                            for (int i = 0; i < hasil.Count; i++)
+                            {
+                                hasil[i].DisplayInfo();
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Buku tidak ditemukan.");
+                        }
+                    }
                 }
                 else if (pilihan == "4")
                 {
-                    Console.Write("Masukkan ID buku yang ingin diperbarui: ");
-                    int id = Convert.ToInt32(Console.ReadLine());
-                    perpustakaan.UpdateBuku(id);
+                    Console.WriteLine("\nUpdate Buku");
+                    Console.Write("Masukkan ID buku yang akan diupdate: ");
+                    int updateId = int.Parse(Console.ReadLine());
+                    Book bukuToUpdate = perpustakaan.CariBukuByID(updateId);
+                    if (bukuToUpdate != null)
+                    {
+                        Console.Write("Masukkan Judul baru: ");
+                        string newJudul = Console.ReadLine();
+                        Console.Write("Masukkan Penulis baru: ");
+                        string newPenulis = Console.ReadLine();
+                        Console.Write("Masukkan Tahun Terbit baru: ");
+                        int newTahun = int.Parse(Console.ReadLine());
+                        Console.Write("Masukkan Status (1=Tersedia, 0=Dipinjam): ");
+                        bool newStatus = Console.ReadLine() == "1";
+
+                        if (perpustakaan.UpdateBuku(updateId, newJudul, newPenulis, newTahun, newStatus))
+                        {
+                            Console.WriteLine("Buku berhasil diupdate!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Buku tidak ditemukan.");
+                    }
                 }
                 else if (pilihan == "5")
                 {
-                    Console.Write("Masukkan ID buku yang ingin dihapus: ");
-                    int id = Convert.ToInt32(Console.ReadLine());
-                    perpustakaan.HapusBuku(id);
+                    Console.WriteLine("\nHapus Buku");
+                    Console.Write("Masukkan ID buku yang akan dihapus: ");
+                    int hapusId = int.Parse(Console.ReadLine());
+                    if (perpustakaan.HapusBuku(hapusId))
+                    {
+                        Console.WriteLine("Buku berhasil dihapus!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Buku tidak ditemukan.");
+                    }
                 }
                 else if (pilihan == "6")
                 {
-                    Console.WriteLine("Terima kasih telah menggunakan aplikasi.");
-                    jalan = false;
+                    isRunning = false;
                 }
                 else
                 {
                     Console.WriteLine("Pilihan tidak valid.");
                 }
             }
+
+            Console.WriteLine("Terima kasih telah menggunakan sistem perpustakaan.");
         }
     }
 }
